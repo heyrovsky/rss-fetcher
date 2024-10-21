@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/heyrovsky/rsscurator/common/reader"
 	"github.com/heyrovsky/rsscurator/pkg/content"
+	"github.com/mmcdole/gofeed"
 	"go.uber.org/zap"
 )
 
@@ -18,8 +18,8 @@ type RssReader struct {
 
 func (r *RssReader) ReadNews() ([]content.NewsItemHashed, error) {
 	newsItems := []content.NewsItemHashed{}
-
-	feed, err := reader.Url.ParseURL(r.Url)
+	reader := gofeed.NewParser()
+	feed, err := reader.ParseURL(r.Url)
 	if err != nil {
 		return newsItems, err
 	}
