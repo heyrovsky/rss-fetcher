@@ -29,3 +29,11 @@ type NewsItem struct {
 	Updated     *time.Time       `json:"updated,omitempty"`
 	Published   *time.Time       `json:"published,omitempty"`
 }
+
+func ExtractHashes(items []NewsItemHashed) []string {
+	hashes := make([]string, len(items))
+	for i, item := range items {
+		hashes[i] = item.Hash
+	}
+	return hashes
+}
