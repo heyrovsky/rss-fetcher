@@ -8,10 +8,11 @@ import (
 
 	"github.com/heyrovsky/rsscurator/common/utils"
 	"github.com/heyrovsky/rsscurator/pkg/content"
+	"go.uber.org/zap"
 )
 
 // JsonWriter writes unique hashed news items to a JSON file, ensuring no duplicates across months.
-func JsonWriter(data []content.NewsItemHashed, fileName, folderName, lastMonthfolderName string) error {
+func JsonWriter(data []content.NewsItemHashed, fileName, folderName, lastMonthfolderName string, logger zap.Logger) error {
 	// Return early if there's no data to process
 	if len(data) == 0 {
 		return errors.New("no data provided to JsonWriter")
@@ -61,7 +62,7 @@ func JsonWriter(data []content.NewsItemHashed, fileName, folderName, lastMonthfo
 		return fmt.Errorf("error writing JSON data: %w", err)
 	}
 
-	fmt.Printf("Successfully written %d unique items to %s\n", len(uniqueData), fileName)
+	logger.Info(fmt.Sprintf("Successfully written %d unique items to %s\n", len(uniqueData), fileName))
 	return nil
 }
 
@@ -90,9 +91,29 @@ func filterUniqueData(data []content.NewsItemHashed, uniqueHashes []string) []co
 	return uniqueData
 }
 
-// writeJSONFile marshals and writes JSON data to a file.
+// writeJSONFile appends or writes JSON data to a file based on its existence.
 func writeJSONFile(fileName string, data []content.NewsItemHashed) error {
-	jsonData, err := json.MarshalIndent(data, "", "  ")
+	var allData []content.NewsItemHashed
+
+	// Check if the file already exists
+	if _, err := os.Stat(fileName); err == nil {
+		// File exists, so read the current content
+		existingData, err := readJSONFile(fileName)
+		if err != nil {
+			return fmt.Errorf("error reading existing JSON file: %w", err)
+		}
+		// Append the new data to the existing data
+		allData = append(existingData, data...)
+	} else if errors.Is(err, os.ErrNotExist) {
+		// File doesn't exist, so we'll create a new one with only the new data
+		allData = data
+	} else {
+		// Some other error occurred
+		return fmt.Errorf("error checking file existence: %w", err)
+	}
+
+	// Marshal the combined data and write it to the file
+	jsonData, err := json.MarshalIndent(allData, "", "  ")
 	if err != nil {
 		return fmt.Errorf("error marshaling JSON: %w", err)
 	}
@@ -101,4 +122,18 @@ func writeJSONFile(fileName string, data []content.NewsItemHashed) error {
 		return fmt.Errorf("error writing to file: %w", err)
 	}
 	return nil
+}
+
+// readJSONFile reads and unmarshals JSON data from a file.
+func readJSONFile(fileName string) ([]content.NewsItemHashed, error) {
+	fileData, err := os.ReadFile(fileName)
+	if err != nil {
+		return nil, fmt.Errorf("error reading JSON file: %w", err)
+	}
+
+	var data []content.NewsItemHashed
+	if err := json.Unmarshal(fileData, &data); err != nil {
+		return nil, fmt.Errorf("error unmarshaling JSON data: %w", err)
+	}
+	return data, nil
 }

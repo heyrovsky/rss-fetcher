@@ -4,6 +4,7 @@ import (
 	"log"
 	"path/filepath"
 
+	"github.com/heyrovsky/rsscurator/common/constants"
 	"github.com/heyrovsky/rsscurator/common/services"
 	"github.com/heyrovsky/rsscurator/common/utils"
 	"github.com/heyrovsky/rsscurator/config"
@@ -21,8 +22,8 @@ func init() {
 	config.IntitilizeConfigs()
 	fileName, folderName, lastMonthfolderName = utils.CreateSubfolderAndNames("feeds")
 
-	folderName = filepath.Join("feeds", folderName)
-	lastMonthfolderName = filepath.Join("feeds", lastMonthfolderName)
+	folderName = filepath.Join(constants.FEED_FOLDER_NAME, folderName)
+	lastMonthfolderName = filepath.Join(constants.FEED_FOLDER_NAME, lastMonthfolderName)
 	fileName = filepath.Join(folderName, fileName)
 
 	if err := utils.CreateFolderIfNotExists(folderName); err != nil {
@@ -38,10 +39,10 @@ func main() {
 	services.InitServices(logger)
 	data, err := services.FetchNewsItems()
 	if err != nil {
-		log.Fatalln(err)
+		logger.Error(err.Error())
 	}
-	if err := writer.JsonWriter(data, fileName, folderName, lastMonthfolderName); err != nil {
-		log.Println(err)
+	if err := writer.JsonWriter(data, fileName, folderName, lastMonthfolderName, *logger); err != nil {
+		logger.Error(err.Error())
 	}
 
 }

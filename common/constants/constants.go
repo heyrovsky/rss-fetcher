@@ -6,5 +6,6 @@ const (
 	CAT_BLOCKCHAIN   = "blockchain"
 	CAT_TECHNOLOGY   = "technology"
 
-	INDEX_FILE = "index.json"
+	FEED_FOLDER_NAME = "feeds"
+	INDEX_FILE       = "index.json"
 )
