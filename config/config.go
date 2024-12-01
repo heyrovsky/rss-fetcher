@@ -6,15 +6,11 @@ import (
 )
 
 var (
-	CYBERSEC   []string
-	TECHNOLOGY []string
-	BLOCKCHAIN []string
+	FEEDS []string
 )
 
 func IntitilizeConfigs() {
 	utils.ImportConfig()
 
-	CYBERSEC = viper.GetStringSlice("cybersec")
-	TECHNOLOGY = viper.GetStringSlice("technology")
-	BLOCKCHAIN = viper.GetStringSlice("blockchain")
+	FEEDS = viper.GetStringSlice("feeds")
 }
